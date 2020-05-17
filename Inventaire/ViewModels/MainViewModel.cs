@@ -1,13 +1,19 @@
 ﻿using BillingManagement.Models;
+using BillingManagement.UI.Contexts;
 using BillingManagement.UI.ViewModels.Commands;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 namespace BillingManagement.UI.ViewModels
 {
     class MainViewModel : BaseViewModel
     {
+		public CustomerContext db = new CustomerContext();
+
+
 		private BaseViewModel _vm;
 
 		public BaseViewModel VM
@@ -43,20 +49,26 @@ namespace BillingManagement.UI.ViewModels
 
 		public DelegateCommand<Customer> AddInvoiceToCustomerCommand { get; private set; }
 
+		public RelayCommand<IClosable> ExitCommand { get; private set; }
+
 
 		public MainViewModel()
 		{
 			ChangeViewCommand = new ChangeViewCommand(ChangeView);
 			DisplayInvoiceCommand = new DelegateCommand<Invoice>(DisplayInvoice);
 			DisplayCustomerCommand = new DelegateCommand<Customer>(DisplayCustomer);
+			this.ExitCommand = new RelayCommand<IClosable>(this.Exit);
 
 			AddNewItemCommand = new DelegateCommand<object>(AddNewItem, CanAddNewItem);
 			AddInvoiceToCustomerCommand = new DelegateCommand<Customer>(AddInvoiceToCustomer);
 
-			customerViewModel = new CustomerViewModel();
-			invoiceViewModel = new InvoiceViewModel(customerViewModel.Customers);
+			customerViewModel = new CustomerViewModel(db);
+			invoiceViewModel = new InvoiceViewModel(db);
+
 
 			VM = customerViewModel;
+
+			//initValues();
 
 		}
 
@@ -88,7 +100,12 @@ namespace BillingManagement.UI.ViewModels
 		private void AddInvoiceToCustomer(Customer c)
 		{
 			var invoice = new Invoice(c);
-			c.Invoices.Add(invoice);
+			db.Invoices.Add(invoice);
+			db.SaveChanges();
+
+			invoiceViewModel.Invoices.Clear();
+			invoiceViewModel.Invoices = new ObservableCollection<Invoice>(db.Invoices);
+
 			DisplayInvoice(invoice);
 		}
 
@@ -96,8 +113,13 @@ namespace BillingManagement.UI.ViewModels
 		{
 			if (VM == customerViewModel)
 			{
-				var c = new Customer();
-				customerViewModel.Customers.Add(c);
+				var c = new Customer() { Name = "TBD", LastName = "TBD" };
+				db.Customers.Add(c);
+				db.SaveChanges();
+
+				customerViewModel.Customers.Clear();
+				customerViewModel.Customers = new ObservableCollection<Customer>(db.Customers.OrderBy(c => c.LastName));
+
 				customerViewModel.SelectedCustomer = c;
 			}
 		}
@@ -110,5 +132,13 @@ namespace BillingManagement.UI.ViewModels
 			return result;
 		}
 
+
+		private void Exit(IClosable window)
+		{
+			if (window != null)
+			{
+				window.Close();
+			}
+		}
 	}
 }

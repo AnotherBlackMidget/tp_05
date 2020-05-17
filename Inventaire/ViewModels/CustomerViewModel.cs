@@ -1,22 +1,24 @@
-﻿using BillingManagement.Business;
+﻿
 using BillingManagement.Models;
+using BillingManagement.UI.Contexts;
 using BillingManagement.UI.ViewModels.Commands;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 
 namespace BillingManagement.UI.ViewModels
 {
     public class CustomerViewModel : BaseViewModel
     {
-        readonly CustomersDataService customersDataService = new CustomersDataService();
+        public CustomerContext db;
 
         private ObservableCollection<Customer> customers;
         private Customer selectedCustomer;
-
+        
         public ObservableCollection<Customer> Customers
         {
             get => customers;
-            private set
+            set
             {
                 customers = value;
                 OnPropertyChanged();
@@ -36,19 +38,17 @@ namespace BillingManagement.UI.ViewModels
         public RelayCommand<Customer> DeleteCustomerCommand { get; private set; }
 
 
-        public CustomerViewModel()
+        public CustomerViewModel( CustomerContext db)
         {
             DeleteCustomerCommand = new RelayCommand<Customer>(DeleteCustomer, CanDeleteCustomer);
-            
 
-            InitValues();
+            this.db = db;
+
+            Customers = new ObservableCollection<Customer>(db.Customers.OrderBy(c => c.LastName));
+
         }
 
-        private void InitValues()
-        {
-            Customers = new ObservableCollection<Customer>(customersDataService.GetAll());
-            Debug.WriteLine(Customers.Count);
-        }
+
 
         private void DeleteCustomer(Customer c)
         {
@@ -56,9 +56,13 @@ namespace BillingManagement.UI.ViewModels
 
             if (currentIndex > 0) currentIndex--;
 
-            SelectedCustomer = Customers[currentIndex];
+            db.Customers.Remove(c);
+            db.SaveChanges();
 
-            Customers.Remove(c);
+            Customers.Clear();
+            Customers = new ObservableCollection<Customer>(db.Customers.OrderBy(c => c.LastName));
+
+            SelectedCustomer = Customers[currentIndex];
         }
 
         private bool CanDeleteCustomer(Customer c)
