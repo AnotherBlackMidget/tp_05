@@ -51,13 +51,16 @@ namespace BillingManagement.UI.ViewModels
 
 		public RelayCommand<IClosable> ExitCommand { get; private set; }
 
+		public RelayCommand<object> SaveCommand { get; private set; }
+
 
 		public MainViewModel()
 		{
 			ChangeViewCommand = new ChangeViewCommand(ChangeView);
 			DisplayInvoiceCommand = new DelegateCommand<Invoice>(DisplayInvoice);
 			DisplayCustomerCommand = new DelegateCommand<Customer>(DisplayCustomer);
-			this.ExitCommand = new RelayCommand<IClosable>(this.Exit);
+			ExitCommand = new RelayCommand<IClosable>(Exit);
+			SaveCommand = new RelayCommand<object>(Save);
 
 			AddNewItemCommand = new DelegateCommand<object>(AddNewItem, CanAddNewItem);
 			AddInvoiceToCustomerCommand = new DelegateCommand<Customer>(AddInvoiceToCustomer);
@@ -139,6 +142,11 @@ namespace BillingManagement.UI.ViewModels
 			{
 				window.Close();
 			}
+		}
+
+		private void Save(object o)
+		{
+			db.SaveChanges();
 		}
 	}
 }
