@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace app_models
+namespace BillingManagement.Models
 {
     public class Customer : INotifyPropertyChanged
     {
@@ -15,7 +15,10 @@ namespace app_models
         private string postalCode;
         private string picturePath;
         private string contactInfo;
+        private ObservableCollection<ContactInfo> contactInfos = new ObservableCollection<ContactInfo>();
+        private ObservableCollection<Invoice> invoices = new ObservableCollection<Invoice>();
 
+        #region Property definitions
         public string Name
         {
             get => name;
@@ -26,7 +29,9 @@ namespace app_models
                 OnPropertyChanged(nameof(Info));
             }
         }
-        public string LastName { get => lastName; 
+        public string LastName
+        {
+            get => lastName;
             set
             {
                 lastName = value;
@@ -34,35 +39,45 @@ namespace app_models
                 OnPropertyChanged(nameof(Info));
             }
         }
-        public string Address { get => address; 
+        public string Address
+        {
+            get => address;
             set
             {
                 address = value;
                 OnPropertyChanged();
             }
         }
-        public string City { get => city;
+        public string City
+        {
+            get => city;
             set
             {
                 city = value;
                 OnPropertyChanged();
             }
         }
-        public string Province { get => province;
+        public string Province
+        {
+            get => province;
             set
             {
                 province = value;
                 OnPropertyChanged();
             }
         }
-        public string PostalCode { get => postalCode;
+        public string PostalCode
+        {
+            get => postalCode;
             set
             {
                 postalCode = value;
                 OnPropertyChanged();
             }
         }
-        public string PicturePath { get => picturePath;
+        public string PicturePath
+        {
+            get => picturePath;
             set
             {
                 picturePath = value;
@@ -82,13 +97,32 @@ namespace app_models
 
         public string Info => $"{LastName}, {Name}";
 
+        #endregion
+
         public Customer()
         {
             PicturePath = "images/user.png";
         }
 
-        public ObservableCollection<ContactInfo> ContactInfos { get; set; }
+        public ObservableCollection<ContactInfo> ContactInfos
+        {
+            get => contactInfos;
+            set
+            {
+                contactInfos = value;
+                OnPropertyChanged();
+            }
+        }
 
+        public ObservableCollection<Invoice> Invoices
+        {
+            get => invoices;
+            set
+            {
+                invoices = value;
+                OnPropertyChanged();
+            }
+        }
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)

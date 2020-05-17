@@ -1,4 +1,4 @@
-﻿namespace app_models
+﻿namespace BillingManagement.Models
 {
     public class ContactInfo
     {
