@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Windows;
 
 namespace BillingManagement.UI.ViewModels
 {
@@ -53,6 +54,8 @@ namespace BillingManagement.UI.ViewModels
 
 		public RelayCommand<object> SaveCommand { get; private set; }
 
+		public RelayCommand<object> SearchCommand { get; set; }
+
 
 		public MainViewModel()
 		{
@@ -61,6 +64,7 @@ namespace BillingManagement.UI.ViewModels
 			DisplayCustomerCommand = new DelegateCommand<Customer>(DisplayCustomer);
 			ExitCommand = new RelayCommand<IClosable>(Exit);
 			SaveCommand = new RelayCommand<object>(Save);
+			SearchCommand = new RelayCommand<object>(SearchContact, CanExecuteSearch);
 
 			AddNewItemCommand = new DelegateCommand<object>(AddNewItem, CanAddNewItem);
 			AddInvoiceToCustomerCommand = new DelegateCommand<Customer>(AddInvoiceToCustomer);
@@ -144,9 +148,29 @@ namespace BillingManagement.UI.ViewModels
 			}
 		}
 
-		private void Save(object o)
+		private void Save(object parameter)
 		{
 			db.SaveChanges();
+		}
+
+		private void SearchContact(object parameter)
+		{
+			string input = parameter as string;
+
+			customerViewModel.Customers.Clear();
+
+			customerViewModel.Customers = new ObservableCollection<Customer>(db.Customers.Where(c => c.LastName.ToLower().StartsWith(input.ToLower())).OrderBy(c => c.LastName));
+
+			try { customerViewModel.SelectedCustomer = customerViewModel.Customers.First(); } catch (Exception e) { MessageBox.Show(e.Message); };
+
+
+		}
+
+		public bool CanExecuteSearch(object parameter)
+		{
+			bool result;
+			result = VM == customerViewModel;
+			return result;
 		}
 	}
 }
